@@ -225,6 +225,14 @@
       </v-layout>
     </v-container>
 
+              <!------------ Alert start ------------>
+          <div class="flex xs3" style="left: 10px; bottom: 10px; position: absolute; z-index: 10;" >
+            <v-alert :value="isAlert" :type="alertType" dismissible transition="scale-transition">
+               {{alertMsg}}
+            </v-alert>
+          </div>
+          <!------------ Alert end ------------>
+
     <v-footer app class="footer pa-3">
       <span v-if="!$vuetify.breakpoint.smAndDown"> For missing features, contact us: </span>
       <v-icon class="ml-1" style="margin-right: 5px;" color="white">email</v-icon>
@@ -240,8 +248,13 @@
 
 <script>
 // https://accounting.test.euxdat.eu/api/ui/ --> swagger doc
+import CONST from "../const";
 export default {
   data: () => ({
+    euxdatURL: CONST.euxdatURL,
+    isAlert: false,
+    alertMsg: "",
+    alertType: "error",    
     user: {},
     filterArr:[
       {
@@ -360,21 +373,20 @@ export default {
     getUserId(userName){
     
       // var today = new Date();
-
       // var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
       // console.log(date)
 
-      this.$http.get('https://accounting.test.euxdat.eu/api/'.concat('users/name/', userName.preferred_username)).then(response => {                            
+      this.$http.get(this.euxdatURL.concat('users/name/', userName.preferred_username)).then(response => {                            
         //console.log("CAMBIA EL USER ID")        
-        this.userAccId = response.body.id;
-        this.userAccId = 2 // <----- REMOVE
+        this.userAccId = response.body.id;        
+        this.userAccId = 2 // <----- REMOVE                
       }, response => {        
-        //this.$eventBus.$emit('show-alert', "error", response.statusText); 
+        this.showAlert("error", response.statusText);
       });
     },  
     getInfo(){
       
-      var url = 'https://accounting.test.euxdat.eu/api/consumption';
+      var url = this.euxdatURL.concat('consumption');
 
       if(this.selectedFilter.id === 'infra'){
         url = url.concat('/infrastructure/', this.selectedInfrastructure.id , '/user/', this.userAccId);
@@ -390,15 +402,28 @@ export default {
         url = url.concat('/transaction/', this.selectedTimeframe.start, '/', this.selectedTimeframe.end)        
       }
 
-      console.log(url)
-
       this.$http.get(url).then(response => {                                    
         this.output = response.body;
         this.isOutput = true;    
-      }, response => {        
-        //this.$eventBus.$emit('show-alert', "error", response.statusText); 
+        this.showAlert("success", response.statusText);
+      }, response => {                
+        this.showAlert("error", response.statusText);
       });
     },
+    /**
+    * Create an alert with custom message
+    *
+    * @param {string} type
+    * @param {string} msg
+    * @public
+    */
+    showAlert(type, msg){
+      var self = this;
+      this.isAlert = true;
+      this.alertMsg = msg;
+      this.alertType = type;
+      setTimeout(function(){ self.isAlert = false; }, 8000);
+    },//showAlert    
     logout: function(){
       this.$keycloak.logoutFn();
     },//logout

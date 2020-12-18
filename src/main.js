@@ -5,6 +5,7 @@ import 'vuetify/dist/vuetify.min.css' // Ensure you are using css-loader
 import '@mdi/font/css/materialdesignicons.css' // Ensure you are using css-loader
 import VueKeyCloak from '@dsb-norge/vue-keycloak-js'
 import VueResource from 'vue-resource'
+import CONST from './const.js'
 
 Vue.config.productionTip = true
 
@@ -14,13 +15,7 @@ Vue.use(Vuetify, { //material icons
 })
 
 Vue.use(VueKeyCloak, {
-  config: {
-    authRealm: "euxdat",
-    authUrl: "https://test.euxdat.eu/auth",
-    authClientId: "frontend",
-    logoutRedirectUri: "https://test.euxdat.eu",
-  },
-
+  config: CONST.keyCloakConf,
   onReady: () => {
     new Vue({
       el: '#app',
